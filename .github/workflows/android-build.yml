@@ -1,0 +1,41 @@
+name: Compile Android APK
+
+on:
+  push:
+    branches: [ "main", "001-i-wanto-to" ]
+  workflow_dispatch: # Permet de lancer le build manuellement d'un simple clic
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Recupérer le code source
+        uses: actions/checkout@v4
+
+      - name: Installer Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'zulu'
+          java-version: '17'
+
+      - name: Installer Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: 'stable'
+
+      - name: Récupérer les dépendances Flutter
+        run: |
+          cd mobile
+          flutter pub get
+
+      - name: Compiler le fichier APK
+        run: |
+          cd mobile
+          flutter build apk --release
+
+      - name: Sauvegarder et rendre l'APK téléchargeable
+        uses: actions/upload-artifact@v4
+        with:
+          name: Mon-Application-Android
+          path: mobile/build/app/outputs/flutter-apk/app-release.apk
