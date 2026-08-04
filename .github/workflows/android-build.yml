@@ -1,7 +1,7 @@
 name: Compile Android APK
 
 on:
-  workflow_dispatch: # Permet de forcer manuellement le démarrage propre avec le bouton
+  workflow_dispatch:
 
 jobs:
   build:
@@ -20,19 +20,18 @@ jobs:
       - name: Installer Flutter Specifique
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.19.0' # Version stable et compatible pour ce projet
+          flutter-version: '3.19.0'
           channel: 'stable'
 
-      - name: Forcer le nettoyage des paquets
+      - name: Récupérer les paquets
         run: |
           cd mobile
-          flutter pub cache clean --force
           flutter pub get
 
-      - name: Compiler en APK
+      - name: Compiler en APK avec la bonne cible
         run: |
           cd mobile
-          flutter build apk --release --no-tree-shake-icons
+          flutter build apk --release --target=lib/main_development.dart --no-tree-shake-icons
 
       - name: Sauvegarder l'APK
         uses: actions/upload-artifact@v4
