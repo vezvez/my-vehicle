@@ -3,10 +3,6 @@ name: Compile Android APK
 on:
   workflow_dispatch:
 
-defaults:
-  run:
-    working-directory: mobile
-
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -28,20 +24,29 @@ jobs:
           channel: 'stable'
           cache: true
 
-      - name: Forcer la création des dossiers d'assets manquants
+      - name: Correction dynamique de l'arborescence des assets
         run: |
-          mkdir -p assets/images
-          mkdir -p assets/fonts
-          mkdir -p assets/icons
-          touch assets/images/.gitkeep
-          touch assets/fonts/.gitkeep
-          touch assets/icons/.gitkeep
+          # Se placer dans le dossier mobile
+          cd mobile
+          
+          # Créer les dossiers localement dans l'application
+          mkdir -p assets/images assets/fonts assets/icons
+          touch assets/images/.gitkeep assets/fonts/.gitkeep assets/icons/.gitkeep
+          
+          # Résoudre le problème du double répertoire imbriqué (my_vehicle/mobile)
+          # en créant un lien symbolique ou un dossier jumeau exigé par le pubspec de l'auteur
+          mkdir -p my_vehicle/mobile/assets/images
+          mkdir -p my_vehicle/mobile/assets/fonts
+          mkdir -p my_vehicle/mobile/assets/icons
+          
+          # Copier les fichiers de sécurité pour valider la présence
+          cp -r assets/* my_vehicle/mobile/assets/
 
-      - name: Récupérer les paquets de l'application
-        run: flutter pub get
-
-      - name: Compiler en APK officiel
-        run: flutter build apk --release --no-tree-shake-icons
+      - name: Récupérer les paquets et compiler l'APK
+        run: |
+          cd mobile
+          flutter pub get
+          flutter build apk --release --no-tree-shake-icons
 
       - name: Sauvegarder l'APK fini
         uses: actions/upload-artifact@v4
