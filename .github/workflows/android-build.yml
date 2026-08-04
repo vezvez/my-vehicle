@@ -3,6 +3,10 @@ name: Compile Android APK
 on:
   workflow_dispatch:
 
+defaults:
+  run:
+    working-directory: mobile
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -17,36 +21,24 @@ jobs:
           distribution: 'zulu'
           java-version: '17'
 
-      - name: Installer Flutter Specifique
+      - name: Installer Flutter
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.19.0'
           channel: 'stable'
-          cache: true
 
-      - name: Correction dynamique de l'arborescence des assets
+      - name: Generer le dossier android manquant
+        run: flutter create . --platforms=android
+
+      - name: Creer les dossiers d'images vides requis
         run: |
-          # Se placer dans le dossier mobile
-          cd mobile
-          
-          # Créer les dossiers localement dans l'application
           mkdir -p assets/images assets/fonts assets/icons
           touch assets/images/.gitkeep assets/fonts/.gitkeep assets/icons/.gitkeep
-          
-          # Résoudre le problème du double répertoire imbriqué (my_vehicle/mobile)
-          # en créant un lien symbolique ou un dossier jumeau exigé par le pubspec de l'auteur
-          mkdir -p my_vehicle/mobile/assets/images
-          mkdir -p my_vehicle/mobile/assets/fonts
-          mkdir -p my_vehicle/mobile/assets/icons
-          
-          # Copier les fichiers de sécurité pour valider la présence
-          cp -r assets/* my_vehicle/mobile/assets/
 
-      - name: Récupérer les paquets et compiler l'APK
-        run: |
-          cd mobile
-          flutter pub get
-          flutter build apk --release --no-tree-shake-icons
+      - name: Recuperer les paquets
+        run: flutter pub get
+
+      - name: Compiler l'APK
+        run: flutter build apk --release --no-tree-shake-icons
 
       - name: Sauvegarder l'APK fini
         uses: actions/upload-artifact@v4
