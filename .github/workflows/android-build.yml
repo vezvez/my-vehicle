@@ -1,15 +1,22 @@
-name: Compile Android APK
+name: Diagnostics et Compilation APK
 
 on:
   workflow_dispatch:
 
 jobs:
-  build:
+  diagnose-and-build:
     runs-on: ubuntu-latest
 
     steps:
       - name: Recuperer le code source
         uses: actions/checkout@v4
+
+      - name: LST — Afficher les fichiers disponibles
+        run: |
+          echo "=== CONTENU DU DOSSIER LIB ==="
+          ls -R mobile/lib || echo "Dossier mobile/lib introuvable"
+          echo "=== CONTENU DE TOUT LE DOSSIER MOBILE ==="
+          ls -R mobile
 
       - name: Installer Java 17
         uses: actions/setup-java@v4
@@ -28,13 +35,7 @@ jobs:
           cd mobile
           flutter pub get
 
-      - name: Compiler en APK avec la bonne cible
+      - name: Tenter une compilation automatique par défaut
         run: |
           cd mobile
-          flutter build apk --release --target=lib/main_development.dart --no-tree-shake-icons
-
-      - name: Sauvegarder l'APK
-        uses: actions/upload-artifact@v4
-        with:
-          name: Mon-Application-Android
-          path: mobile/build/app/outputs/flutter-apk/app-release.apk
+          flutter build apk --release --no-tree-shake-icons
