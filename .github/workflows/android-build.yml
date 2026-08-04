@@ -1,9 +1,8 @@
 name: Compile Android APK
 
 on:
-  workflow_dispatch: # Permet le déclenchement propre en un clic
+  workflow_dispatch:
 
-# Force GitHub à utiliser le sous-dossier mobile comme point de départ
 defaults:
   run:
     working-directory: mobile
@@ -29,11 +28,17 @@ jobs:
           channel: 'stable'
           cache: true
 
+      - name: Forcer la création des dossiers d'assets manquants
+        run: |
+          mkdir -p assets/images
+          mkdir -p assets/fonts
+          mkdir -p assets/icons
+          touch assets/images/.gitkeep
+          touch assets/fonts/.gitkeep
+          touch assets/icons/.gitkeep
+
       - name: Récupérer les paquets de l'application
         run: flutter pub get
-
-      - name: Generer les fichiers de configuration manquants
-        run: flutter create . --platforms=android
 
       - name: Compiler en APK officiel
         run: flutter build apk --release --no-tree-shake-icons
